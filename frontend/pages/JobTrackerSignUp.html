@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Tracker - Sign Up</title>
+    <link href="../css/main.css" rel="stylesheet" />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffrancisia7282back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.6"></script>
+</head>
+<body class="bg-[#ffffff] min-h-screen">
+    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-16 sm:gap-20 md:gap-24 lg:gap-[104px] justify-start items-center min-h-screen py-8 sm:py-12 md:py-16">
+            <!-- Logo/Title -->
+            <h1 class="text-2xl sm:text-3xl md:text-[32px] font-normal leading-tight sm:leading-[53px] text-center text-[#3b53f4] mt-16 sm:mt-20 md:mt-[104px]" style="font-family: 'Holtwood One SC', serif;">
+                JOB TRACKED
+            </h1>
+            
+            <!-- Main Content Container -->
+            <div class="flex flex-col gap-6 justify-start items-center w-full max-w-sm sm:max-w-md md:max-w-lg">
+                <!-- Header Section -->
+                <div class="flex flex-col gap-1 sm:gap-[6px] justify-center items-center w-full px-4 sm:px-8 md:px-[54px]">
+                    <h2 class="text-xl sm:text-2xl md:text-[24px] font-semibold leading-tight sm:leading-[30px] text-center text-[#4285f4]">
+                        Create an account
+                    </h2>
+                    <p class="text-sm sm:text-base md:text-[16px] font-normal leading-5 sm:leading-[20px] text-center text-[#4285f4]">
+                        Enter your email to sign up for this app
+                    </p>
+                </div>
+                
+                <!-- Form Section -->
+                <div class="flex flex-col gap-6 justify-start items-center w-full">
+                    <!-- Email Input and Sign Up Button -->
+                    <div class="flex flex-col gap-4 justify-start items-center w-full">
+                        <!-- Email Input -->
+                        <input type="email" placeholder="email@domain.com" class="w-full text-base sm:text-lg md:text-[20px] font-medium leading-6 sm:leading-[25px] text-left text-[#828282] bg-[#ffffff] border border-solid border-[#dfdfdf] rounded-lg px-3 sm:px-4 md:px-[16px] py-1 sm:py-1.5 md:py-[6px] focus:outline-none focus:ring-2 focus:ring-[#4285f4] focus:border-transparent transition-all duration-300" />
+                        <input type="password" id="passwordInput" placeholder="Create password" class="w-full text-base sm:text-lg md:text-[20px] font-medium leading-6 sm:leading-[25px] text-left text-[#828282] bg-[#ffffff] border border-solid border-[#dfdfdf] rounded-lg px-3 sm:px-4 md:px-[16px] py-1 sm:py-1.5 md:py-[6px] focus:outline-none focus:ring-2 focus:ring-[#4285f4] focus:border-transparent transition-all duration-300 ease-in-out" style="display: none;"/>
+
+                        <!-- Sign Up Button -->
+                        <button id="signupBtn" class="w-full text-sm sm:text-base md:text-[16px] font-medium leading-5 sm:leading-[20px] text-center text-[#ffffff] bg-[#4285f4] rounded-lg px-6 sm:px-8 md:px-[34px] py-2 sm:py-2.5 md:py-[8px] hover:bg-blue-600 active:scale-95 transition-all duration-300">
+                          Sign up with email
+                        </button>
+
+                        <!-- Toggle Login/Signup -->
+                        <p class="text-sm text-center text-[#4285f4] mt-2">
+                          Already have an account?
+                        <button id="toggleLogin" class="text-blue-500 hover:underline">Log in here</button></p>
+
+                    </div>
+                    
+                    <!-- Divider Section -->
+                    <div class="flex flex-row gap-2 justify-center items-center w-full">
+                        <div class="h-[1px] w-full max-w-[100px] sm:max-w-[120px] md:max-w-[130px] bg-[#e6e6e6]"></div>
+                        <span class="text-sm sm:text-base md:text-[16px] font-normal leading-5 sm:leading-[20px] text-center text-[#828282] whitespace-nowrap px-2">
+                            or continue with
+                        </span>
+                        <div class="h-[1px] w-full max-w-[100px] sm:max-w-[120px] md:max-w-[130px] bg-[#e6e6e6]"></div>
+                    </div>
+                </div>
+                
+                <!-- Google Sign Up Button -->
+               <a href="http://localhost:5000/api/auth/google"  class="flex flex-row gap-6 sm:gap-8 md:gap-[34px] justify-center items-center w-full text-sm sm:text-base md:text-[16px] font-medium leading-5 sm:leading-[20px] text-left text-[#4285f4] bg-[#eeeeee] rounded-lg px-6 sm:px-8 md:px-[34px] py-2 sm:py-2.5 md:py-[8px] hover:bg-gray-300 active:scale-95 transition-all duration-300">
+               <img src="../assets/images/img_google.svg" class="w-5 h-5" alt="Google" /><span>Google</span></a>
+                <!-- Terms and Privacy -->
+                <p class="text-sm sm:text-base md:text-[16px] font-normal leading-6 sm:leading-[24px] text-center text-[#828282] w-full px-2">
+                    <span class="text-[#828282]">By clicking continue, you agree to our </span>
+                    <a href="#" class="text-[#4285f4] hover:underline transition-all duration-300">Terms of Service</a>
+                    <span class="text-[#828282]"> and </span>
+                    <a href="#" class="text-[#4285f4] hover:underline transition-all duration-300">Privacy Policy</a>
+                </p>
+            </div>
+        </div>
+    </div>
+<!-- Keep everything above this line unchanged -->
+<script>
+  const signUpBtn = document.querySelector('#signupBtn');
+  const emailInput = document.querySelector('input[type="email"]');
+  const passwordInput = document.getElementById('passwordInput');
+  const toggleLogin = document.getElementById('toggleLogin');
+
+  let step = 1;
+  let isLoginMode = false;
+  let isForgotPassword = false;
+
+  // Create message box for feedback
+  const messageBox = document.createElement('div');
+  messageBox.className = "mt-4 text-center text-sm font-medium";
+  emailInput.parentElement.appendChild(messageBox);
+
+  // Forgot password link
+  const forgotPasswordLink = document.createElement('button');
+  forgotPasswordLink.textContent = 'Forgot password?';
+  forgotPasswordLink.className = 'text-blue-500 hover:underline mt-2 text-sm block';
+  passwordInput.parentElement.appendChild(forgotPasswordLink);
+
+  toggleLogin.addEventListener('click', () => {
+    isLoginMode = !isLoginMode;
+    isForgotPassword = false;
+    step = 1;
+    passwordInput.style.display = 'none';
+    passwordInput.value = '';
+    passwordInput.placeholder = isLoginMode ? 'Enter your password' : 'Create password';
+    signUpBtn.textContent = isLoginMode ? 'Log in with email' : 'Sign up with email';
+    toggleLogin.textContent = isLoginMode ? 'Create an account instead' : 'Log in here';
+    forgotPasswordLink.style.display = isLoginMode ? 'block' : 'none';
+    showMessage('', '');
+  });
+
+  forgotPasswordLink.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    if (!email) return showMessage('Please enter your email.', 'error');
+
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showMessage('Password reset instructions sent to your email.', 'success');
+      } else {
+        showMessage(data.message || 'Failed to send reset email.', 'error');
+      }
+    } catch (err) {
+      showMessage('Network error. Try again.', 'error');
+    }
+  });
+
+  signUpBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+
+    if (step === 1) {
+      if (!email) return showMessage('Please enter a valid email.', 'error');
+      passwordInput.placeholder = isLoginMode ? 'Enter your password' : 'Create password';
+      passwordInput.style.display = 'block';
+      passwordInput.focus();
+      signUpBtn.textContent = isLoginMode ? 'Log In' : 'Create Account';
+      step = 2;
+      return;
+    }
+
+    const password = passwordInput.value.trim();
+    if (!password || password.length < 6) {
+      return showMessage('Password must be at least 6 characters.', 'error');
+    }
+
+    const endpoint = isLoginMode
+      ? 'http://localhost:5000/api/auth/login'
+      : 'http://localhost:5000/api/auth/signup';
+
+    const payload = {
+      email,
+      password,
+      ...(isLoginMode ? {} : { name: email.split('@')[0] }) // Dummy name for signup
+    };
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      console.log("Response data:", data);
+
+      if (res.ok) {
+        const user = {
+          email,
+          name: email.split('@')[0],
+          profilePicture: null,
+          provider: "manual"
+        };
+
+        localStorage.setItem('user', JSON.stringify(user));
+        showMessage(`${isLoginMode ? 'Login' : 'Signup'} successful! Redirecting...`, 'success');
+
+        setTimeout(() => {
+          window.location.href = 'JobTrackerDashboard.html';
+        }, 1000);
+      } else {
+        showMessage(data.message || 'Something went wrong during login.', 'error');
+      }
+
+    } catch (err) {
+      showMessage('Something went wrong. Please try again.', 'error');
+    }
+  });
+
+  function showMessage(msg, type) {
+    if (!msg) {
+      messageBox.textContent = '';
+      return;
+    }
+    messageBox.textContent = msg;
+    messageBox.className = `mt-4 text-center text-sm font-medium ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
+  }
+</script>
+
+
+
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>
