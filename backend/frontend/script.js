@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const companyInput = document.querySelector('input[placeholder="Company"]');
   const positionInput = document.querySelector('input[placeholder="Position"]');
-  const addButton = document.querySelector('button');
+  const addButton = document.querySelector('#addJobBtn');
   const jobList = document.querySelector('.job-list');
   const filterButtons = document.querySelectorAll('.filter-btn');
   const sortSelect = document.querySelector('select');

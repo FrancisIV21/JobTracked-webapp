@@ -4,10 +4,11 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
+const path = require('path'); // 🆕 Needed for file paths
 
 const connectDB = require('./config/db');
 const jobroutes = require('./routes/jobroutes');
-const authroutes = require('./routes/authroutes'); // updated route name
+const authroutes = require('./routes/authroutes');
 
 dotenv.config();
 
@@ -28,9 +29,28 @@ app.use(session({
 }));
 
 // Passport Middleware
-require('./config/passport'); // Load passport config
+require('./config/passport');
 app.use(passport.initialize());
 app.use(passport.session());
+
+// 🆕 Serve static frontend files
+const frontendPath = path.join(__dirname, 'frontend');
+app.use(express.static(frontendPath));
+
+// 🆕 Route to serve HTML pages from /frontend/pages
+app.get('/pages/:pageName', (req, res) => {
+  const pageFile = path.join(frontendPath, 'pages', req.params.pageName);
+  res.sendFile(pageFile, (err) => {
+    if (err) {
+      res.status(404).send('Page not found.');
+    }
+  });
+});
+
+// 🆕 Optional: Redirect root to the dashboard
+app.get('/', (req, res) => {
+  res.redirect('/pages/JobTrackerDashboard.html');
+});
 
 // API Routes
 app.use('/api/jobs', jobroutes);

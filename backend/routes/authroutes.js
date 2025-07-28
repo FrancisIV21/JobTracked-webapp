@@ -66,8 +66,19 @@ router.get('/google', passport.authenticate('google', {
 router.get('/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('http://127.0.0.1:5500/frontend/pages/JobTrackerDashboard.html');
+    const user = req.user;
+
+    const redirectUrl = `http://localhost:5500/pages/JobTrackerDashboard.html?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}&profilePicture=${encodeURIComponent(user.profilePicture || '')}&provider=google`;
+
+    res.redirect(redirectUrl);
   }
 );
+router.get('/google/failure', (req, res) => {
+  res.status(401).send('❌ Google login failed.');
+});
 
+router.get('/debug/user', (req, res) => {
+
+  res.json(req.user || { msg: 'No user in session' });
+});
 module.exports = router;

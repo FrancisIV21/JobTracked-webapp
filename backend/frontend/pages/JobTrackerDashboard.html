@@ -16,8 +16,8 @@
 
 <body class="bg-[#f4f6fa] h-screen overflow-hidden flex flex-col">
   <!-- Profile Icon Button -->
-<button id="profileBtn" class="absolute top-4 left-4 z-50">
-  <img id="profileImage" src="../assets/images/default-profile.png" alt="Profile" class="w-8 h-8 rounded-full border-2 border-white shadow" />
+<button id="profileBtn" type="button" class="absolute top-4 left-4 z-50">
+  <img id="profileImage" src="../assets/images/profileicon.svg" alt="Profile" class="w-8 h-8 rounded-full border-2 border-white shadow" />
 </button>
 
   <div class="flex-1 flex flex-col overflow-hidden w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,7 +44,7 @@
                 
                 <div class="flex flex-col md:flex-row justify-center items-center gap-3 w-full md:flex-1">
                   <input type="text" placeholder="Position" class="w-full md:w-[74%] px-4 py-3 text-base text-[#b3b3b3] bg-white border border-[#d9d9d9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4285f4] focus:border-transparent transition-all" />
-                  <button class="w-full md:w-auto px-4 py-3 text-base text-[#f5f5f5] bg-[#4285f4] rounded-lg hover:bg-blue-600 active:scale-95 transition-all shadow-[0px_4px_4px_#00000005]">Add</button>
+                  <button id="addJobBtn" class="w-full md:w-auto px-4 py-3 text-base text-[#f5f5f5] bg-[#4285f4] rounded-lg hover:bg-blue-600 active:scale-95 transition-all shadow-[0px_4px_4px_#00000005]">Add</button>
                 </div>
               </div>
             </div>
@@ -130,47 +130,96 @@
 </div>
 
 <script>
-  const profileBtn = document.getElementById('profileBtn');
-  const profilePanel = document.getElementById('profilePanel');
-  const closePanel = document.getElementById('closePanel');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const userEmail = document.getElementById('userEmail');
-  const profileImage = document.getElementById('profileImage');
-  const overlay = document.getElementById('overlay');
+  document.addEventListener('DOMContentLoaded', () => {
+    // 🔍 Check if redirected from Google login
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email");
+    const name = params.get("name");
+    const profilePicture = params.get("profilePicture");
+    const provider = params.get("provider");
 
-  const user = JSON.parse(localStorage.getItem('user'));
-
-  if (user) {
-    if (user.email) {
-      userEmail.textContent = `Email: ${user.email}`;
+    if (email && name && provider === "google") {
+      const user = {
+        email,
+        name,
+        profilePicture: profilePicture || null,
+        provider: "google"
+      };
+      localStorage.setItem("user", JSON.stringify(user));
+      // Remove query params from URL
+      window.history.replaceState({}, document.title, "JobTrackerDashboard.html");
     }
 
-    // Try profilePicture, then fallback to default
-    if (user.profilePicture) {
-      profileImage.src = user.profilePicture;
-    } else {
-      profileImage.src = '../assets/images/default-profile.png';
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    // ⛔ Redirect if user is not logged in
+    if (!user || !user.email) {
+      window.location.href = 'JobTrackerSignUp.html';
+      return;
     }
-  }
 
-  function openPanel() {
-    profilePanel.classList.remove('-translate-x-full');
-    overlay.classList.remove('hidden');
-  }
+    // UI Elements
+    const profileBtn = document.getElementById('profileBtn');
+    const profilePanel = document.getElementById('profilePanel');
+    const closePanel = document.getElementById('closePanel');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userEmail = document.getElementById('userEmail');
+    const profileImage = document.getElementById('profileImage');
+    const overlay = document.getElementById('overlay');
 
-  function closePanelFn() {
-    profilePanel.classList.add('-translate-x-full');
-    overlay.classList.add('hidden');
-  }
+    // Set user data in UI
+    userEmail.textContent = `Email: ${user.email}`;
+    profileImage.src = user.profilePicture || '../assets/images/default-profile.png';
 
-  profileBtn.addEventListener('click', openPanel);
-  closePanel.addEventListener('click', closePanelFn);
-  overlay.addEventListener('click', closePanelFn);
+    // Panel toggle
+    function openPanel() {
+      profilePanel.classList.remove('-translate-x-full');
+      overlay.classList.remove('hidden');
+    }
 
-  logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('user');
-    window.location.href = 'JobTrackerSignUp.html'; // Adjust path if needed
+    function closePanelFn() {
+      profilePanel.classList.add('-translate-x-full');
+      overlay.classList.add('hidden');
+    }
+
+    profileBtn.addEventListener('click', openPanel);
+    closePanel.addEventListener('click', closePanelFn);
+    overlay.addEventListener('click', closePanelFn);
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('user');
+      window.location.href = 'JobTrackerSignUp.html';
+    });
+
+    // 🛑 Prevent accidental submits
+    document.querySelectorAll('button[type="button"]').forEach((btn) => {
+      btn.addEventListener('click', (e) => e.preventDefault());
+    });
   });
+</script>
+<script>
+  window.onload = () => {
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email");
+    const name = params.get("name");
+    const profilePicture = params.get("profilePicture");
+    const provider = params.get("provider");
+
+    if (email && name) {
+      const user = { email, name, profilePicture, provider };
+      localStorage.setItem("user", JSON.stringify(user));
+      console.log("Google login user stored:", user);
+      
+      // Optional: clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  };
+</script>
+<script>
+  if (localStorage.getItem("user")) {
+    // Optionally redirect if user is already logged in
+    // window.location.href = "JobTrackerDashboard.html";
+  }
 </script>
 
 

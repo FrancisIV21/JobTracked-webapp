@@ -197,7 +197,52 @@
     messageBox.className = `mt-4 text-center text-sm font-medium ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
   }
 </script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: '941856687955-dukos9oojpfde83kijfmnn9cn3tf8fbs.apps.googleusercontent.com', // Replace with your actual client ID
+      callback: handleGoogleLogin
+    });
 
+    google.accounts.id.renderButton(
+      document.getElementById("googleSignInBtn"), // Add this div to your HTML
+      { theme: "outline", size: "large" }
+    );
+  };
+
+  function parseJwt(token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+  }
+
+  function handleGoogleLogin(response) {
+    const userObject = parseJwt(response.credential);
+
+    const user = {
+      email: userObject.email,
+      name: userObject.name || userObject.email.split('@')[0],
+      profilePicture: userObject.picture || null,
+      provider: 'google'
+    };
+
+    localStorage.setItem('user', JSON.stringify(user));
+    
+    // Optional: show success message
+    console.log("Google Login successful", user);
+    console.log("Parsed user:", { email, name, provider });
+    console.log("User stored:", localStorage.getItem("user"));
+    console.log("User from localStorage:", user);
+
+    // Redirect to dashboard
+    window.location.href = "JobTrackerDashboard.html";
+  }
+</script>
 
 
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
