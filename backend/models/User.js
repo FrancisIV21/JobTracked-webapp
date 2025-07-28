@@ -1,32 +1,39 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const UserSchema = new mongoose.Schema({
-  googleId: {
-    type: String,
-    unique: true,
-    sparse: true // allows both Google and manual users
-  },
+const userSchema = new mongoose.Schema({
+  name: String,
   email: {
     type: String,
     required: true,
     unique: true,
-    lowercase: true,
-    validate: [validator.isEmail, 'Please provide a valid email address']
   },
   password: {
     type: String,
-    // required only if not using Google login
-    validate: {
-      validator: function (value) {
-        // Only require password if user is not using Google login
-        return this.googleId || (value && value.length >= 6);
-      },
-      message: 'Password must be at least 6 characters long'
-    }
+    required: true,
   },
-  name: String,
-  image: String
 });
 
-module.exports = mongoose.model('User', UserSchema);
+// Hash password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+// Compare entered password with hashed
+userSchema.methods.comparePassword = async function (plainPassword) {
+  return await bcrypt.compare(plainPassword, this.password);
+};
+
+// Generate JWT
+userSchema.methods.generateToken = function () {
+  return jwt.sign(
+    { userId: this._id, email: this.email },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+};
+
+module.exports = mongoose.model('User', userSchema);

@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Job = require('../models/Jobs');
+const authenticateToken = require('../middleware/auth'); // 👈 use centralized middleware
 
-// GET all jobs with optional filters
-router.get('/', async (req, res) => {
+// GET all jobs for the logged-in user (with optional filters)
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const { status, search } = req.query;
-    let query = {};
+    const query = { userId: req.userId }; // From token
 
     if (status && status !== 'all') {
       query.status = status;
@@ -21,73 +22,97 @@ router.get('/', async (req, res) => {
 
     const jobs = await Job.find(query).sort({ createdAt: -1 });
     res.json(jobs);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// POST a new job
-router.post('/', async (req, res) => {
+// POST - Create a new job for the user
+router.post('/', authenticateToken, async (req, res) => {
   try {
-    const job = new Job(req.body);
+    if (!req.body.company || !req.body.position) {
+      return res.status(400).json({ error: 'Company and Position are required.' });
+    }
+
+    const job = new Job({
+      ...req.body,
+      userId: req.userId,
+    });
+
     await job.save();
     res.status(201).json(job);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
-// DELETE a job
-router.delete('/:id', async (req, res) => {
+// DELETE - Delete a job by ID (owned by user)
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const result = await Job.findByIdAndDelete(req.params.id);
-    if (!result) return res.status(404).json({ error: 'Job not found' });
-    res.json({ message: 'Job deleted' });
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    const deleted = await Job.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.userId,
+    });
+
+    if (!deleted) return res.status(404).json({ error: 'Job not found or not authorized' });
+
+    res.json({ message: 'Job deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Batch delete
-router.post('/batch-delete', async (req, res) => {
+// BATCH DELETE - Delete multiple jobs owned by the user
+router.post('/batch-delete', authenticateToken, async (req, res) => {
   try {
     const { ids } = req.body;
-    const result = await Job.deleteMany({ _id: { $in: ids } });
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'No job IDs provided.' });
+    }
+
+    const result = await Job.deleteMany({
+      _id: { $in: ids },
+      userId: req.userId,
+    });
+
     res.json({ message: `Deleted ${result.deletedCount} jobs` });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// UPDATE job (PUT)
-router.put('/:id', async (req, res) => {
+// PUT - Full update for a job (owned by user)
+router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const updatedJob = await Job.findByIdAndUpdate(
-      req.params.id,
+    const updatedJob = await Job.findOneAndUpdate(
+      { _id: req.params.id, userId: req.userId },
       req.body,
       { new: true, runValidators: true }
     );
 
-    if (!updatedJob) return res.status(404).json({ error: 'Job not found' });
+    if (!updatedJob) return res.status(404).json({ error: 'Job not found or not authorized' });
+
     res.json(updatedJob);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
-// PATCH job (partial update)
-router.patch('/:id', async (req, res) => {
+// PATCH - Partial update for a job (owned by user)
+router.patch('/:id', authenticateToken, async (req, res) => {
   try {
-    const updatedJob = await Job.findByIdAndUpdate(
-      req.params.id,
+    const updatedJob = await Job.findOneAndUpdate(
+      { _id: req.params.id, userId: req.userId },
       req.body,
       { new: true, runValidators: true }
     );
 
-    if (!updatedJob) return res.status(404).json({ error: 'Job not found' });
+    if (!updatedJob) return res.status(404).json({ error: 'Job not found or not authorized' });
+
     res.json(updatedJob);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

@@ -1,11 +1,49 @@
-// ==== GLOBAL HELPERS ====
+""// ==== GLOBAL HELPERS ====
 const showSpinner = () => document.getElementById('spinner').classList.remove('hidden');
 const hideSpinner = () => document.getElementById('spinner').classList.add('hidden');
 const API_URL = 'http://localhost:5000/api/jobs';
 
 // ==== DOM READY ====
 document.addEventListener('DOMContentLoaded', () => {
-  // === ELEMENTS ===
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get("email");
+  const name = params.get("name");
+  const profilePicture = params.get("profilePicture");
+  const provider = params.get("provider");
+  const token = params.get("token");
+
+  if (email && name && token) {
+    const user = { email, name, profilePicture, provider, token };
+    localStorage.setItem("user", JSON.stringify(user));
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userEmail = user?.email;
+  const userToken = user?.token;
+
+  if (!user || !userToken) {
+    window.location.href = 'JobTrackerSignUp.html';
+    return;
+  }
+
+  document.getElementById('userEmail').textContent = `Email: ${user.email}`;
+  document.getElementById('profileImage').src = user.profilePicture || '../assets/images/default-profile.png';
+
+  const togglePanel = (open) => {
+    document.getElementById('profilePanel').classList.toggle('-translate-x-full', !open);
+    document.getElementById('overlay').classList.toggle('hidden', !open);
+  };
+
+  document.getElementById('profileBtn').addEventListener('click', () => togglePanel(true));
+  document.getElementById('closePanel').addEventListener('click', () => togglePanel(false));
+  document.getElementById('overlay').addEventListener('click', () => togglePanel(false));
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem("user");
+    window.location.href = "JobTrackerSignUp.html";
+  });
+
   document.querySelector('#filter-all').classList.add('bg-[#4285f4]', 'text-white', 'active-filter');
 
   const companyInput = document.querySelector('input[placeholder="Company"]');
@@ -15,10 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterButtons = document.querySelectorAll('.filter-btn');
   const sortSelect = document.querySelector('select');
 
-  // === STATE ===
   let allJobs = [];
 
-  // === UTILITIES ===
   const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -26,15 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return diff === 0 ? 'today' : `${diff} day${diff > 1 ? 's' : ''} ago`;
   };
 
-  // === UI RENDERING ===
   const renderJob = (job) => {
-    const statusClassMap = {
-      pending: 'bg-[#fbbc05] text-[#1e1e1e]',
-      interview: 'bg-[#4285f4] text-[#ebffee]',
-      declined: 'bg-[#eb4335] text-[#ebffee]',
-      accepted: 'bg-[#34a853] text-[#ffffff]'
-    };
-
     return `
       <div class="job-item" data-id="${job._id}" data-status="${job.status}">
         <div class="flex flex-col md:flex-row justify-start items-start w-full bg-white border border-[#828282] rounded-lg p-4">
@@ -53,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="px-8 py-1 text-base">${capitalize(job.status)}</span>
               </div>
             </div>
-
             <div class="flex flex-col md:flex-row justify-center items-center w-full mt-2 gap-4">
               <div class="flex flex-col gap-1 justify-start items-start flex-1">
                 <div class="flex flex-row justify-start items-center w-full">
@@ -62,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <span class="text-xs text-[#000000]">Added ${formatDate(job.createdAt)}</span>
               </div>
-
               <div class="flex flex-row justify-end items-center self-end gap-2">
                 <img src="../assets/images/img_edit_btn.svg" class="w-[18px] h-4 cursor-pointer hover:opacity-70 transition-opacity edit-btn" alt="edit" />
                 <img src="../assets/images/img_delete_btn.svg" class="w-5 h-5 cursor-pointer hover:opacity-70 transition-opacity delete-btn" alt="delete" />
@@ -78,10 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
     jobList.innerHTML = jobs.map(renderJob).join('');
   };
 
-  // === LOAD JOBS ===
   const loadJobs = async (filter = 'all', sort = 'Newest') => {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(`${API_URL}`, {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      });
       let jobs = await res.json();
       allJobs = jobs;
 
@@ -103,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // === CREATE JOB ===
   addButton.addEventListener('click', async () => {
     const company = companyInput.value.trim();
     const position = positionInput.value.trim();
@@ -124,7 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
       showSpinner();
       const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`
+        },
         body: JSON.stringify({ company, position })
       });
 
@@ -146,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
     positionInput.value = '';
   });
 
-  // === FILTERING ===
   filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const filter = btn.dataset.filter;
@@ -163,17 +193,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // === SORTING ===
   sortSelect.addEventListener('change', () => {
     loadJobs(getCurrentFilter(), sortSelect.value);
   });
 
-  // === JOB ACTIONS (edit/delete/save/cancel) ===
   jobList.addEventListener('click', async (e) => {
     const jobDiv = e.target.closest('.job-item');
     const jobId = jobDiv?.dataset?.id;
 
-    // --- DELETE ---
     if (e.target.classList.contains('delete-btn')) {
       if (!confirm('Are you sure you want to delete this job?')) return;
 
@@ -183,7 +210,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         showSpinner();
-        const res = await fetch(`${API_URL}/${jobId}`, { method: 'DELETE' });
+        const res = await fetch(`${API_URL}/${jobId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${userToken}`
+          }
+        });
         if (!res.ok) throw new Error('Delete failed');
       } catch (err) {
         alert('Error deleting job');
@@ -195,7 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // --- EDIT ---
     if (e.target.classList.contains('edit-btn')) {
       const job = allJobs.find(j => j._id === jobId);
       if (!job) return;
@@ -218,14 +249,12 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-    // --- CANCEL EDIT ---
     if (e.target.classList.contains('cancel-edit')) {
       const job = allJobs.find(j => j._id === jobId);
       if (!job) return;
       jobDiv.outerHTML = renderJob(job);
     }
 
-    // --- SAVE EDIT ---
     if (e.target.classList.contains('save-edit')) {
       const updatedCompany = jobDiv.querySelector('.edit-company').value.trim();
       const updatedPosition = jobDiv.querySelector('.edit-position').value.trim();
@@ -236,7 +265,10 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const res = await fetch(`${API_URL}/${jobId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+          },
           body: JSON.stringify({ company: updatedCompany, position: updatedPosition, status: updatedStatus })
         });
 
@@ -256,65 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // === GET CURRENT FILTER ===
   const getCurrentFilter = () => {
     const activeBtn = document.querySelector('.filter-btn.active-filter');
     return activeBtn ? activeBtn.dataset.filter : 'all';
   };
 
-  // === INITIAL LOAD ===
   loadJobs();
 });
-
-
-//Authentication signup/login 
-document.addEventListener('DOMContentLoaded', () => {
-    // Parse URL params from Google login (if any)
-    const params = new URLSearchParams(window.location.search);
-    const email = params.get("email");
-    const name = params.get("name");
-    const profilePicture = params.get("profilePicture");
-    const provider = params.get("provider");
-
-    if (email && name) {
-      const user = { email, name, profilePicture, provider };
-      localStorage.setItem("user", JSON.stringify(user));
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    // Redirect to signup if not authenticated
-    if (!user || !user.email) {
-      window.location.href = 'JobTrackerSignUp.html';
-      return;
-    }
-
-    // DOM references
-    const profileBtn = document.getElementById('profileBtn');
-    const profilePanel = document.getElementById('profilePanel');
-    const closePanel = document.getElementById('closePanel');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const userEmail = document.getElementById('userEmail');
-    const profileImage = document.getElementById('profileImage');
-    const overlay = document.getElementById('overlay');
-
-    // Update UI
-    userEmail.textContent = `Email: ${user.email}`;
-    profileImage.src = user.profilePicture || '../assets/images/default-profile.png';
-
-    // Panel toggle logic
-    const togglePanel = (open) => {
-      profilePanel.classList.toggle('-translate-x-full', !open);
-      overlay.classList.toggle('hidden', !open);
-    };
-
-    profileBtn.addEventListener('click', () => togglePanel(true));
-    closePanel.addEventListener('click', () => togglePanel(false));
-    overlay.addEventListener('click', () => togglePanel(false));
-
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem("user");
-      window.location.href = "JobTrackerSignUp.html";
-    });
-  });
