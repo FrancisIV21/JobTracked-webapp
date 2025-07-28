@@ -5,11 +5,12 @@ const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
 
-// POST /api/auth/signup
+// ======================
+// EMAIL/PASSWORD SIGNUP
+// ======================
 router.post('/signup', async (req, res) => {
   const { email, password } = req.body;
 
-  // Basic validations
   if (!validator.isEmail(email)) {
     return res.status(400).json({ message: 'Invalid email format' });
   }
@@ -19,16 +20,12 @@ router.post('/signup', async (req, res) => {
   }
 
   try {
-    // Check if user exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ message: 'Email already in use' });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Save user
     const user = new User({ email, password: hashedPassword });
     await user.save();
 
@@ -39,7 +36,9 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// POST /api/auth/login
+// ======================
+// EMAIL/PASSWORD LOGIN
+// ======================
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -57,28 +56,43 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Google OAuth Initiation
+// ======================
+// GOOGLE OAUTH INIT
+// ======================
 router.get('/google', passport.authenticate('google', {
   scope: ['profile', 'email'],
 }));
 
-// Google OAuth Callback
-router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/' }),
+// ======================
+// GOOGLE OAUTH CALLBACK
+// ======================
+router.get(
+  '/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: '/pages/JobTrackerLogin.html', // redirect to your login page on failure
+  }),
   (req, res) => {
     const user = req.user;
 
-    const redirectUrl = `http://localhost:5500/pages/JobTrackerDashboard.html?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}&profilePicture=${encodeURIComponent(user.profilePicture || '')}&provider=google`;
+    // ✅ Updated to redirect to the correct PORT: 5000
+    const redirectUrl = `/pages/JobTrackerDashboard.html?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}&profilePicture=${encodeURIComponent(user.profilePicture || '')}&provider=google`;
 
     res.redirect(redirectUrl);
   }
 );
+
+// ======================
+// GOOGLE LOGIN FAILURE
+// ======================
 router.get('/google/failure', (req, res) => {
   res.status(401).send('❌ Google login failed.');
 });
 
+// ======================
+// DEBUG SESSION
+// ======================
 router.get('/debug/user', (req, res) => {
-
   res.json(req.user || { msg: 'No user in session' });
 });
+
 module.exports = router;
