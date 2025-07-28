@@ -72,179 +72,113 @@
     </div>
 <!-- Keep everything above this line unchanged -->
 <script>
-  const signUpBtn = document.querySelector('#signupBtn');
-  const emailInput = document.querySelector('input[type="email"]');
-  const passwordInput = document.getElementById('passwordInput');
-  const toggleLogin = document.getElementById('toggleLogin');
+  document.addEventListener("DOMContentLoaded", () => {
+    const emailInput = document.querySelector('input[type="email"]');
+    const passwordInput = document.getElementById('passwordInput');
+    const signUpBtn = document.getElementById('signupBtn');
+    const toggleLogin = document.getElementById('toggleLogin');
 
-  let step = 1;
-  let isLoginMode = false;
-  let isForgotPassword = false;
+    let isLoginMode = false;
+    let step = 1;
 
-  // Create message box for feedback
-  const messageBox = document.createElement('div');
-  messageBox.className = "mt-4 text-center text-sm font-medium";
-  emailInput.parentElement.appendChild(messageBox);
+    // Message box
+    const messageBox = document.createElement('div');
+    messageBox.className = "mt-4 text-center text-sm font-medium";
+    emailInput.parentElement.appendChild(messageBox);
 
-  // Forgot password link
-  const forgotPasswordLink = document.createElement('button');
-  forgotPasswordLink.textContent = 'Forgot password?';
-  forgotPasswordLink.className = 'text-blue-500 hover:underline mt-2 text-sm block';
-  passwordInput.parentElement.appendChild(forgotPasswordLink);
+    // Forgot password link
+    const forgotPasswordLink = document.createElement('button');
+    forgotPasswordLink.textContent = 'Forgot password?';
+    forgotPasswordLink.className = 'text-blue-500 hover:underline mt-2 text-sm block';
+    passwordInput.parentElement.appendChild(forgotPasswordLink);
+    forgotPasswordLink.style.display = 'none';
 
-  toggleLogin.addEventListener('click', () => {
-    isLoginMode = !isLoginMode;
-    isForgotPassword = false;
-    step = 1;
-    passwordInput.style.display = 'none';
-    passwordInput.value = '';
-    passwordInput.placeholder = isLoginMode ? 'Enter your password' : 'Create password';
-    signUpBtn.textContent = isLoginMode ? 'Log in with email' : 'Sign up with email';
-    toggleLogin.textContent = isLoginMode ? 'Create an account instead' : 'Log in here';
-    forgotPasswordLink.style.display = isLoginMode ? 'block' : 'none';
-    showMessage('', '');
-  });
+    toggleLogin.addEventListener('click', () => {
+      isLoginMode = !isLoginMode;
+      step = 1;
 
-  forgotPasswordLink.addEventListener('click', async () => {
-    const email = emailInput.value.trim();
-    if (!email) return showMessage('Please enter your email.', 'error');
-
-    try {
-      const res = await fetch('http://localhost:5000/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        showMessage('Password reset instructions sent to your email.', 'success');
-      } else {
-        showMessage(data.message || 'Failed to send reset email.', 'error');
-      }
-    } catch (err) {
-      showMessage('Network error. Try again.', 'error');
-    }
-  });
-
-  signUpBtn.addEventListener('click', async () => {
-    const email = emailInput.value.trim();
-
-    if (step === 1) {
-      if (!email) return showMessage('Please enter a valid email.', 'error');
+      passwordInput.style.display = 'none';
+      passwordInput.value = '';
       passwordInput.placeholder = isLoginMode ? 'Enter your password' : 'Create password';
-      passwordInput.style.display = 'block';
-      passwordInput.focus();
-      signUpBtn.textContent = isLoginMode ? 'Log In' : 'Create Account';
-      step = 2;
-      return;
-    }
-
-    const password = passwordInput.value.trim();
-    if (!password || password.length < 6) {
-      return showMessage('Password must be at least 6 characters.', 'error');
-    }
-
-    const endpoint = isLoginMode
-      ? 'http://localhost:5000/api/auth/login'
-      : 'http://localhost:5000/api/auth/signup';
-
-    const payload = {
-      email,
-      password,
-      ...(isLoginMode ? {} : { name: email.split('@')[0] }) // Dummy name for signup
-    };
-
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await res.json();
-      console.log("Response data:", data);
-
-      if (res.ok) {
-        const user = {
-          email,
-          name: email.split('@')[0],
-          profilePicture: null,
-          provider: "manual"
-        };
-
-        localStorage.setItem('user', JSON.stringify(user));
-        showMessage(`${isLoginMode ? 'Login' : 'Signup'} successful! Redirecting...`, 'success');
-
-        setTimeout(() => {
-          window.location.href = 'JobTrackerDashboard.html';
-        }, 1000);
-      } else {
-        showMessage(data.message || 'Something went wrong during login.', 'error');
-      }
-
-    } catch (err) {
-      showMessage('Something went wrong. Please try again.', 'error');
-    }
-  });
-
-  function showMessage(msg, type) {
-    if (!msg) {
-      messageBox.textContent = '';
-      return;
-    }
-    messageBox.textContent = msg;
-    messageBox.className = `mt-4 text-center text-sm font-medium ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
-  }
-</script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>
-  window.onload = function () {
-    google.accounts.id.initialize({
-      client_id: '941856687955-dukos9oojpfde83kijfmnn9cn3tf8fbs.apps.googleusercontent.com', // Replace with your actual client ID
-      callback: handleGoogleLogin
+      signUpBtn.textContent = isLoginMode ? 'Log in with email' : 'Sign up with email';
+      toggleLogin.textContent = isLoginMode ? 'Create an account instead' : 'Log in here';
+      forgotPasswordLink.style.display = isLoginMode ? 'block' : 'none';
+      showMessage('');
     });
 
-    google.accounts.id.renderButton(
-      document.getElementById("googleSignInBtn"), // Add this div to your HTML
-      { theme: "outline", size: "large" }
-    );
-  };
+    forgotPasswordLink.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      if (!email) return showMessage('Please enter your email.', 'error');
 
-  function parseJwt(token) {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        showMessage(res.ok ? 'Password reset sent to your email.' : data.message, res.ok ? 'success' : 'error');
+      } catch {
+        showMessage('Network error. Try again.', 'error');
+      }
+    });
 
-    return JSON.parse(jsonPayload);
-  }
+    signUpBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
 
-  function handleGoogleLogin(response) {
-    const userObject = parseJwt(response.credential);
+      if (step === 1) {
+        if (!email) return showMessage('Please enter a valid email.', 'error');
+        passwordInput.style.display = 'block';
+        passwordInput.focus();
+        signUpBtn.textContent = isLoginMode ? 'Log In' : 'Create Account';
+        step = 2;
+        return;
+      }
 
-    const user = {
-      email: userObject.email,
-      name: userObject.name || userObject.email.split('@')[0],
-      profilePicture: userObject.picture || null,
-      provider: 'google'
-    };
+      const password = passwordInput.value.trim();
+      if (!password || password.length < 6) {
+        return showMessage('Password must be at least 6 characters.', 'error');
+      }
 
-    localStorage.setItem('user', JSON.stringify(user));
-    
-    // Optional: show success message
-    console.log("Google Login successful", user);
-    console.log("Parsed user:", { email, name, provider });
-    console.log("User stored:", localStorage.getItem("user"));
-    console.log("User from localStorage:", user);
+      const endpoint = isLoginMode
+        ? 'http://localhost:5000/api/auth/login'
+        : 'http://localhost:5000/api/auth/signup';
 
-    // Redirect to dashboard
-    window.location.href = "JobTrackerDashboard.html";
-  }
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          const user = {
+            email,
+            name: email.split('@')[0],
+            profilePicture: null,
+            provider: "manual"
+          };
+          localStorage.setItem('user', JSON.stringify(user));
+          showMessage('Success! Redirecting...', 'success');
+          setTimeout(() => window.location.href = 'JobTrackerDashboard.html', 1000);
+        } else {
+          showMessage(data.message || 'Login/signup failed.', 'error');
+        }
+      } catch {
+        showMessage('Something went wrong. Please try again.', 'error');
+      }
+    });
+
+    function showMessage(msg, type) {
+      messageBox.textContent = msg || '';
+      messageBox.className = `mt-4 text-center text-sm font-medium ${
+        type === 'error' ? 'text-red-600' : type === 'success' ? 'text-green-600' : ''
+      }`;
+    }
+  });
 </script>
-
-
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
 </body>
 </html>

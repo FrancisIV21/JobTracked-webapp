@@ -265,3 +265,56 @@ document.addEventListener('DOMContentLoaded', () => {
   // === INITIAL LOAD ===
   loadJobs();
 });
+
+
+//Authentication signup/login 
+document.addEventListener('DOMContentLoaded', () => {
+    // Parse URL params from Google login (if any)
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email");
+    const name = params.get("name");
+    const profilePicture = params.get("profilePicture");
+    const provider = params.get("provider");
+
+    if (email && name) {
+      const user = { email, name, profilePicture, provider };
+      localStorage.setItem("user", JSON.stringify(user));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    // Redirect to signup if not authenticated
+    if (!user || !user.email) {
+      window.location.href = 'JobTrackerSignUp.html';
+      return;
+    }
+
+    // DOM references
+    const profileBtn = document.getElementById('profileBtn');
+    const profilePanel = document.getElementById('profilePanel');
+    const closePanel = document.getElementById('closePanel');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userEmail = document.getElementById('userEmail');
+    const profileImage = document.getElementById('profileImage');
+    const overlay = document.getElementById('overlay');
+
+    // Update UI
+    userEmail.textContent = `Email: ${user.email}`;
+    profileImage.src = user.profilePicture || '../assets/images/default-profile.png';
+
+    // Panel toggle logic
+    const togglePanel = (open) => {
+      profilePanel.classList.toggle('-translate-x-full', !open);
+      overlay.classList.toggle('hidden', !open);
+    };
+
+    profileBtn.addEventListener('click', () => togglePanel(true));
+    closePanel.addEventListener('click', () => togglePanel(false));
+    overlay.addEventListener('click', () => togglePanel(false));
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem("user");
+      window.location.href = "JobTrackerSignUp.html";
+    });
+  });
