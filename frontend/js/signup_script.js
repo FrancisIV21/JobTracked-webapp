@@ -1,12 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
   const config = {
-    frontendBaseUrl: window.location.origin,
-    backendUrl: 'http://localhost:5000',
-    dashboardPath: '/frontend/pages/JobTrackerDashboard.html',
-    signupPath: '/frontend/pages/JobTrackerSignUp.html',
-    tokenKey: 'authToken',
-    userDataKey: 'userData'
-  };
+  frontendBaseUrl: window.location.origin,
+  backendUrl: window.location.hostname === 'localhost'
+    ? 'http://localhost:5000'
+    : 'https://jobtracked.onrender.com',
+  dashboardPath: '/frontend/pages/JobTrackerDashboard.html',
+  signupPath: '/frontend/pages/JobTrackerSignUp.html',
+  tokenKey: 'authToken',
+  userDataKey: 'userData'
+};
 
   function createMessageBox(continueBtn) {
     const box = document.createElement('div');
