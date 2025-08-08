@@ -7,7 +7,7 @@ const path = require('path');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
-
+const PORT = process.env.PORT || 5000;
 const app = express();
 
 // -- Logging Environment (Safe)
@@ -70,6 +70,11 @@ app.use(cors({
   origin: "https://jobtracked-euuf6sl0q-francisiv21s-projects.vercel.app",
   credentials: true
 }));
+
+//port
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
   // -- Session setup
   app.use(session({
