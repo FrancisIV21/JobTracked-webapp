@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Configuration
-  const API_BASE_URL = 'http://localhost:5000/api';
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://jobtracked.onrender.com/api";
   const JOBS_API_URL = `${API_BASE_URL}/jobs`;
   const TOKEN_KEY = 'authToken';
   const USER_DATA_KEY = 'userData';
