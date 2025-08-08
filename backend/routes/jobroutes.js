@@ -1,119 +1,161 @@
 const express = require('express');
 const router = express.Router();
 const Job = require('../models/Jobs');
-const authenticateToken = require('../middleware/auth'); // 👈 use centralized middleware
+const { authenticate } = require('../middleware/auth');
 
-// GET all jobs for the logged-in user (with optional filters)
-router.get('/', authenticateToken, async (req, res) => {
+// Get all jobs with optional filtering
+router.post('/', authenticate, async (req, res) => {
   try {
-    const { status, search } = req.query;
-    const query = { userId: req.userId }; // From token
-
-    if (status && status !== 'all') {
-      query.status = status;
+    if (!req.body.company || !req.body.position) {
+      return res.status(400).json({ 
+        error: 'Both company and position are required',
+        fields: ['company', 'position']
+      });
     }
 
-    if (search) {
-      query.$or = [
-        { company: { $regex: search, $options: 'i' } },
-        { position: { $regex: search, $options: 'i' } },
-      ];
-    }
+    const job = new Job({
+      company: req.body.company.trim(),
+      position: req.body.position.trim(),
+      status: req.body.status || 'pending',
+      userId: req.user._id
+    });
 
-    const jobs = await Job.find(query).sort({ createdAt: -1 });
-    res.json(jobs);
+    await job.save();
+    
+    res.status(201).json({
+      success: true,
+      job,
+      message: 'Job created successfully'
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Create job error:', err);
+    res.status(500).json({ 
+      error: 'Failed to create job',
+      ...(process.env.NODE_ENV === 'development' && { details: err.message })
+    });
   }
 });
 
-// POST - Create a new job for the user
-router.post('/', authenticateToken, async (req, res) => {
+
+router.get('/', authenticate, async (req, res) => {
+  try {
+    const jobs = await Job.find({ userId: req.user._id });
+    res.json(jobs);
+  } catch (err) {
+    console.error('Fetch jobs error:', err);
+    res.status(500).json({ error: 'Failed to fetch jobs' });
+  }
+});
+
+
+
+// Create new job
+router.post('/', authenticate, async (req, res) => {
   try {
     if (!req.body.company || !req.body.position) {
-      return res.status(400).json({ error: 'Company and Position are required.' });
+      return res.status(400).json({ error: 'Company and Position are required' });
     }
 
     const job = new Job({
       ...req.body,
-      userId: req.userId,
+      userId: req.user.id
     });
 
     await job.save();
     res.status(201).json(job);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Create job error:', err);
+    res.status(500).json({ error: 'Failed to create job' });
   }
 });
 
-// DELETE - Delete a job by ID (owned by user)
-router.delete('/:id', authenticateToken, async (req, res) => {
+// Delete job by ID
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const deleted = await Job.findOneAndDelete({
       _id: req.params.id,
-      userId: req.userId,
+      userId: req.user.id
     });
 
-    if (!deleted) return res.status(404).json({ error: 'Job not found or not authorized' });
+    if (!deleted) {
+      return res.status(404).json({ error: 'Job not found or not authorized' });
+    }
 
     res.json({ message: 'Job deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Delete job error:', err);
+    res.status(500).json({ error: 'Failed to delete job' });
   }
 });
 
-// BATCH DELETE - Delete multiple jobs owned by the user
-router.post('/batch-delete', authenticateToken, async (req, res) => {
+// Batch delete jobs
+router.post('/batch-delete', authenticate, async (req, res) => {
   try {
     const { ids } = req.body;
 
     if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ error: 'No job IDs provided.' });
+      return res.status(400).json({ error: 'No job IDs provided' });
     }
 
     const result = await Job.deleteMany({
       _id: { $in: ids },
-      userId: req.userId,
+      userId: req.user.id
     });
 
     res.json({ message: `Deleted ${result.deletedCount} jobs` });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Batch delete error:', err);
+    res.status(500).json({ error: 'Failed to delete jobs' });
   }
 });
 
-// PUT - Full update for a job (owned by user)
-router.put('/:id', authenticateToken, async (req, res) => {
+// Full update job
+router.put('/:id', authenticate, async (req, res) => {
   try {
     const updatedJob = await Job.findOneAndUpdate(
-      { _id: req.params.id, userId: req.userId },
+      { _id: req.params.id, userId: req.user.id },
       req.body,
       { new: true, runValidators: true }
     );
 
-    if (!updatedJob) return res.status(404).json({ error: 'Job not found or not authorized' });
+    if (!updatedJob) {
+      return res.status(404).json({ error: 'Job not found or not authorized' });
+    }
 
     res.json(updatedJob);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Update job error:', err);
+    res.status(500).json({ error: 'Failed to update job' });
   }
 });
 
-// PATCH - Partial update for a job (owned by user)
-router.patch('/:id', authenticateToken, async (req, res) => {
+// Partial update job
+router.patch('/:id', authenticate, async (req, res) => {
   try {
     const updatedJob = await Job.findOneAndUpdate(
-      { _id: req.params.id, userId: req.userId },
+      { _id: req.params.id, userId: req.user.id },
       req.body,
       { new: true, runValidators: true }
     );
 
-    if (!updatedJob) return res.status(404).json({ error: 'Job not found or not authorized' });
+    if (!updatedJob) {
+      return res.status(404).json({ error: 'Job not found or not authorized' });
+    }
 
     res.json(updatedJob);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Patch job error:', err);
+    res.status(500).json({ error: 'Failed to update job' });
   }
+});
+
+// Error handling
+router.use((err, req, res, next) => {
+  console.error('Job route error:', err);
+  res.status(500).json({ 
+    error: 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { details: err.message })
+  });
 });
 
 module.exports = router;
