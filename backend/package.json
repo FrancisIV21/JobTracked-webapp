@@ -28,6 +28,7 @@
     "mongoose": "^8.17.0",
     "passport": "^0.7.0",
     "passport-custom": "^1.1.1",
+    "passport-google-oauth20": "^2.0.0",
     "validator": "^13.15.15",
     "winston": "^3.17.0"
   },
