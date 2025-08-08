@@ -66,8 +66,8 @@ const startServer = async () => {
   app.use(express.urlencoded({ extended: true }));
 
   // -- CORS with credentials
- app.use(cors({
-  origin: ['http://localhost:5501', 'http://127.0.0.1:5501'],
+app.use(cors({
+  origin: "https://jobtracked-euuf6sl0q-francisiv21s-projects.vercel.app",
   credentials: true
 }));
 
