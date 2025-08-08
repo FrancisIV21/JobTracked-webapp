@@ -7,8 +7,8 @@ const passport = require('passport');
 const session = require('express-session');
 const path = require('path');
 
-const authRoutes = require('./routes/authRoutes');
-const jobRoutes = require('./routes/jobRoutes');
+const authroutes = require('./routes/authroutes');
+const jobroutes = require('./routes/jobroutes');
 require('./config/passport'); // passport strategies
 
 const app = express();
@@ -57,8 +57,8 @@ app.use(passport.session());
 // =======================
 // API Routes
 // =======================
-app.use('/api/auth', authRoutes);
-app.use('/api/jobs', jobRoutes);
+app.use('/api/auth', authroutes);
+app.use('/api/jobs', jobroutes);
 
 // Health check (optional)
 app.get('/', (req, res) => {
