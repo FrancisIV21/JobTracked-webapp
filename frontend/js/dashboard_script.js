@@ -29,6 +29,22 @@ document.addEventListener("DOMContentLoaded", () => {
     searchInput: document.getElementById('searchInput')
   };
 
+  // Helper function to get headers with authentication
+  function getAuthHeaders(includeContentType = false) {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const headers = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    if (includeContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
+    return headers;
+  }
+
   // Initialize Dashboard
   async function initializeDashboard() {
     console.log('Initializing dashboard...');
@@ -161,19 +177,9 @@ document.addEventListener("DOMContentLoaded", () => {
     showSpinner();
     
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
-      const headers = {};
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
       const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(true),
         credentials: 'include' // Include cookies
       });
 
@@ -205,15 +211,8 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadJobs(filter = 'all', sort = 'Newest', search = '') {
     showSpinner();
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
-      const headers = {};
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
       const response = await fetch(`${JOBS_API_URL}?filter=${filter}&sort=${sort}&search=${encodeURIComponent(search)}`, {
-        headers,
+        headers: getAuthHeaders(),
         credentials: 'include' // Include cookies for authentication
       });
       
@@ -266,8 +265,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="text-xs text-[#000000]">Added ${formatDate(job.createdAt)}</span>
               </div>
               <div class="flex flex-row justify-end items-center self-end gap-2">
-                <img src="../assets/images/img_edit_btn.svg" class="w-[18px] h-4 cursor-pointer hover:opacity-70 transition-opacity edit-btn" alt="edit" />
-                <img src="../assets/images/img_delete_btn.svg" class="w-5 h-5 cursor-pointer hover:opacity-70 transition-opacity delete-btn" alt="delete" />
+                <img src="../assets/images/img_edit_btn.svg" class="w-[18px] h-4 cursor-pointer hover:opacity-70 transition-opacity edit-btn" alt="edit" data-job-id="${job._id}" />
+                <img src="../assets/images/img_delete_btn.svg" class="w-5 h-5 cursor-pointer hover:opacity-70 transition-opacity delete-btn" alt="delete" data-job-id="${job._id}" />
               </div>
             </div>
           </div>
@@ -287,18 +286,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     showSpinner();
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
       const response = await fetch(`${JOBS_API_URL}`, {
         method: 'POST',
-        headers,
+        headers: getAuthHeaders(true),
         credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({ company, position })
       });
@@ -312,7 +302,8 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(errorData.error || 'Failed to add job');
       }
 
-      const newJob = await response.json();
+      const result = await response.json();
+      const newJob = result.job || result; // Handle both response formats
       
       // Ensure the new job has default values for required fields
       const jobWithDefaults = {
@@ -345,10 +336,10 @@ document.addEventListener("DOMContentLoaded", () => {
     
     showSpinner();
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
       const response = await fetch(`${JOBS_API_URL}/${jobId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: getAuthHeaders(),
+        credentials: 'include' // Include cookies for authentication
       });
 
       if (!response.ok) {
@@ -356,14 +347,15 @@ document.addEventListener("DOMContentLoaded", () => {
           redirectToLogin();
           return;
         }
-        throw new Error('Delete failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Delete failed');
       }
 
       allJobs = allJobs.filter(j => j._id !== jobId);
       renderJobs(allJobs);
       showSuccess('Job deleted successfully!');
     } catch (error) {
-      showError('Failed to delete job. Please try again.');
+      showError(error.message || 'Failed to delete job. Please try again.');
       console.error('Error deleting job:', error);
     } finally {
       hideSpinner();
@@ -373,13 +365,10 @@ document.addEventListener("DOMContentLoaded", () => {
   async function updateJob(jobId, updatedData) {
     showSpinner();
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
       const response = await fetch(`${JOBS_API_URL}/${jobId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: getAuthHeaders(true),
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify(updatedData)
       });
 
@@ -388,7 +377,8 @@ document.addEventListener("DOMContentLoaded", () => {
           redirectToLogin();
           return false;
         }
-        throw new Error('Update failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Update failed');
       }
       
       const updatedJob = await response.json();
@@ -398,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showSuccess('Job updated successfully!');
       return true;
     } catch (error) {
-      showError('Failed to update job. Please try again.');
+      showError(error.message || 'Failed to update job. Please try again.');
       console.error('Error updating job:', error);
       return false;
     } finally {
@@ -428,6 +418,13 @@ document.addEventListener("DOMContentLoaded", () => {
     
     detailEl.querySelector('.close-detail').addEventListener('click', () => {
       detailEl.remove();
+    });
+    
+    // Close on overlay click
+    detailEl.addEventListener('click', (e) => {
+      if (e.target === detailEl) {
+        detailEl.remove();
+      }
     });
     
     document.body.appendChild(detailEl);
@@ -471,6 +468,13 @@ document.addEventListener("DOMContentLoaded", () => {
     
     editEl.querySelector('.close-edit').addEventListener('click', () => {
       editEl.remove();
+    });
+    
+    // Close on overlay click
+    editEl.addEventListener('click', (e) => {
+      if (e.target === editEl) {
+        editEl.remove();
+      }
     });
     
     editEl.querySelector('.save-edit').addEventListener('click', async () => {
@@ -710,23 +714,48 @@ document.addEventListener("DOMContentLoaded", () => {
       loadJobs(filter, sort, search);
     }, 300));
 
-    // Job list interactions
+    // FIXED: Job list interactions with proper event delegation
     elements.jobList?.addEventListener('click', (e) => {
-      const jobItem = e.target.closest('.job-item');
-      if (!jobItem) return;
-
-      const jobId = jobItem.dataset.id;
-      const job = allJobs.find(j => j._id === jobId);
-      if (!job) return;
-
+      console.log('Job list clicked:', e.target);
+      
+      // Check if clicked element is a delete button
       if (e.target.classList.contains('delete-btn')) {
         e.stopPropagation();
-        deleteJob(jobId);
-      } else if (e.target.classList.contains('edit-btn')) {
+        e.preventDefault();
+        const jobId = e.target.getAttribute('data-job-id');
+        console.log('Delete button clicked for job:', jobId);
+        if (jobId) {
+          deleteJob(jobId);
+        }
+        return;
+      }
+      
+      // Check if clicked element is an edit button
+      if (e.target.classList.contains('edit-btn')) {
         e.stopPropagation();
-        showEditForm(job);
-      } else {
-        showJobDetail(job);
+        e.preventDefault();
+        const jobId = e.target.getAttribute('data-job-id');
+        console.log('Edit button clicked for job:', jobId);
+        if (jobId) {
+          const job = allJobs.find(j => j._id === jobId);
+          if (job) {
+            showEditForm(job);
+          }
+        }
+        return;
+      }
+      
+      // Check if clicked on job item (for details)
+      const jobItem = e.target.closest('.job-item');
+      if (jobItem) {
+        const jobId = jobItem.getAttribute('data-id');
+        console.log('Job item clicked for details:', jobId);
+        if (jobId) {
+          const job = allJobs.find(j => j._id === jobId);
+          if (job) {
+            showJobDetail(job);
+          }
+        }
       }
     });
   }

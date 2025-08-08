@@ -4,6 +4,17 @@ const Job = require('../models/Jobs');
 const { authenticate } = require('../middleware/auth');
 
 // Get all jobs with optional filtering
+router.get('/', authenticate, async (req, res) => {
+  try {
+    const jobs = await Job.find({ userId: req.user._id });
+    res.json(jobs);
+  } catch (err) {
+    console.error('Fetch jobs error:', err);
+    res.status(500).json({ error: 'Failed to fetch jobs' });
+  }
+});
+
+// Create new job - SINGLE POST ROUTE
 router.post('/', authenticate, async (req, res) => {
   try {
     if (!req.body.company || !req.body.position) {
@@ -17,7 +28,7 @@ router.post('/', authenticate, async (req, res) => {
       company: req.body.company.trim(),
       position: req.body.position.trim(),
       status: req.body.status || 'pending',
-      userId: req.user._id
+      userId: req.user._id // Use consistent _id
     });
 
     await job.save();
@@ -36,45 +47,12 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-
-router.get('/', authenticate, async (req, res) => {
-  try {
-    const jobs = await Job.find({ userId: req.user._id });
-    res.json(jobs);
-  } catch (err) {
-    console.error('Fetch jobs error:', err);
-    res.status(500).json({ error: 'Failed to fetch jobs' });
-  }
-});
-
-
-
-// Create new job
-router.post('/', authenticate, async (req, res) => {
-  try {
-    if (!req.body.company || !req.body.position) {
-      return res.status(400).json({ error: 'Company and Position are required' });
-    }
-
-    const job = new Job({
-      ...req.body,
-      userId: req.user.id
-    });
-
-    await job.save();
-    res.status(201).json(job);
-  } catch (err) {
-    console.error('Create job error:', err);
-    res.status(500).json({ error: 'Failed to create job' });
-  }
-});
-
 // Delete job by ID
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     const deleted = await Job.findOneAndDelete({
       _id: req.params.id,
-      userId: req.user.id
+      userId: req.user._id // Use consistent _id
     });
 
     if (!deleted) {
@@ -99,7 +77,7 @@ router.post('/batch-delete', authenticate, async (req, res) => {
 
     const result = await Job.deleteMany({
       _id: { $in: ids },
-      userId: req.user.id
+      userId: req.user._id // Use consistent _id
     });
 
     res.json({ message: `Deleted ${result.deletedCount} jobs` });
@@ -113,7 +91,7 @@ router.post('/batch-delete', authenticate, async (req, res) => {
 router.put('/:id', authenticate, async (req, res) => {
   try {
     const updatedJob = await Job.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
+      { _id: req.params.id, userId: req.user._id }, // Use consistent _id
       req.body,
       { new: true, runValidators: true }
     );
@@ -133,7 +111,7 @@ router.put('/:id', authenticate, async (req, res) => {
 router.patch('/:id', authenticate, async (req, res) => {
   try {
     const updatedJob = await Job.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
+      { _id: req.params.id, userId: req.user._id }, // Use consistent _id
       req.body,
       { new: true, runValidators: true }
     );
