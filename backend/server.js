@@ -48,6 +48,17 @@ try {
   console.error('❌ Error stack:', error.stack);
 }
 
+// Add job routes with detailed error handling
+try {
+  console.log('🔄 Loading job routes...');
+  const jobroutes = require('./routes/jobroutes');
+  app.use('/api/jobs', jobroutes);
+  console.log('✅ Job routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading job routes:', error.message);
+  console.error('❌ Error stack:', error.stack);
+}
+
 // MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
