@@ -268,8 +268,8 @@
                   <span class="text-xs text-[#000000]">Added ${formatDate(job.createdAt)}</span>
                 </div>
                 <div class="flex flex-row justify-end items-center self-end gap-2">
-                  <img src="../assets/images/img_edit_btn.svg" class="w-[18px] h-4 cursor-pointer hover:opacity-70 transition-opacity edit-btn" alt="edit" data-job-id="${job._id}" />
-                  <img src="../assets/images/img_delete_btn.svg" class="w-5 h-5 cursor-pointer hover:opacity-70 transition-opacity delete-btn" alt="delete" data-job-id="${job._id}" />
+                  <img src="frontend/assets/images/img_edit_btn.svg" class="w-[18px] h-4 cursor-pointer hover:opacity-70 transition-opacity edit-btn" alt="edit" data-job-id="${job._id}" />
+                  <img src="frontend/assets/images/img_delete_btn.svg" class="w-5 h-5 cursor-pointer hover:opacity-70 transition-opacity delete-btn" alt="delete" data-job-id="${job._id}" />
                 </div>
               </div>
             </div>
