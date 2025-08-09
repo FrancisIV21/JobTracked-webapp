@@ -262,7 +262,7 @@
               <div class="flex flex-col md:flex-row justify-center items-center w-full mt-2 gap-4">
                 <div class="flex flex-col gap-1 justify-start items-start flex-1">
                   <div class="flex flex-row justify-start items-center w-full">
-                    <img src="../assets/images/img_code.svg" class="w-5 h-[18px]" alt="code icon" />
+                    <img src="frontend/assets/images/img_code.svg" class="w-5 h-[18px]" alt="code icon" />
                     <span class="text-xs md:text-sm text-[#000000] self-end ml-2">${job.position || 'Unknown Position'}</span>
                   </div>
                   <span class="text-xs text-[#000000]">Added ${formatDate(job.createdAt)}</span>
