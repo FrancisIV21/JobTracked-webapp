@@ -33,6 +33,7 @@ app.use(passport.session());
 app.use(cors({
   origin: [
     'http://localhost:5501',
+    'https://jobtracked.vercel.app',  // ← ADD THIS - Your actual Vercel URL
     'https://jobtracked-euuf6sl0q-francisiv21s-projects.vercel.app'
   ],
   credentials: true,

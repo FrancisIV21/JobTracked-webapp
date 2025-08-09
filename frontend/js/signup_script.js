@@ -1,14 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
   const config = {
-  frontendBaseUrl: window.location.origin,
-  backendUrl: window.location.hostname === 'localhost'
-    ? 'http://localhost:5000'
-    : 'https://jobtracked.onrender.com',
-  dashboardPath: '/JobTrackerDashboard',
-  signupPath: '/JobTrackerSignUp',
-  tokenKey: 'authToken',
-  userDataKey: 'userData'
-};
+    frontendBaseUrl: window.location.origin,
+    backendUrl: window.location.hostname === 'localhost'
+      ? 'http://localhost:5000'
+      : 'https://jobtracked.onrender.com',
+    dashboardPath: '/JobTrackerDashboard',
+    signupPath: '/JobTrackerSignUp',
+    tokenKey: 'authToken',
+    userDataKey: 'userData'
+  };
 
   function createMessageBox(continueBtn) {
     const box = document.createElement('div');
@@ -38,12 +38,18 @@ document.addEventListener("DOMContentLoaded", () => {
   async function handleEmailLogin(email) {
     try {
       showMessage('Logging in...', 'info');
+      console.log('Email login attempt for:', email);
+      console.log('Backend URL:', config.backendUrl);
+      
       const response = await fetch(`${config.backendUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ email })
       });
+
+      console.log('Email login response status:', response.status);
+      console.log('Email login response ok:', response.ok);
 
       const data = await response.json();
 
@@ -145,38 +151,59 @@ document.addEventListener("DOMContentLoaded", () => {
       // 3. Check HTTP-only cookie session
       console.log('Checking cookie session...');
       try {
+        console.log('Making request to verify endpoint with credentials...');
+        console.log('Request URL:', `${config.backendUrl}/api/auth/verify`);
+        
         const response = await fetch(`${config.backendUrl}/api/auth/verify`, {
           credentials: 'include'
         });
         
+        console.log('Verify response status:', response.status);
+        console.log('Verify response ok:', response.ok);
+        
         if (response.ok) {
           const data = await response.json();
-          console.log('Cookie session valid, getting token...');
+          console.log('Cookie session valid! Response data:', data);
+          console.log('About to redirect to dashboard...');
           
           try {
             // Get token for localStorage
+            console.log('Attempting to get token for localStorage...');
             const tokenResponse = await fetch(`${config.backendUrl}/api/auth/get-token`, {
               credentials: 'include'
             });
             
+            console.log('Get-token response status:', tokenResponse.status);
             if (tokenResponse.ok) {
               const tokenData = await tokenResponse.json();
               localStorage.setItem(config.tokenKey, tokenData.token);
+              console.log('Token stored in localStorage');
+            } else {
+              console.log('Failed to get token, but continuing...');
             }
           } catch (tokenError) {
             console.warn('Could not retrieve token for localStorage:', tokenError);
           }
           
           localStorage.setItem(config.userDataKey, JSON.stringify(data.user));
-          console.log('Cookie session verified, redirecting...');
+          console.log('User data stored in localStorage');
+          console.log('Cookie session verified, redirecting to:', config.dashboardPath);
           showMessage('Session found! Redirecting...', 'success');
+          
           setTimeout(() => {
+            console.log('Executing redirect to dashboard...');
             window.location.href = config.dashboardPath;
           }, 1000);
           return true;
+        } else {
+          console.log('Cookie session not valid, response not ok');
+          const errorText = await response.text();
+          console.log('Response text:', errorText);
         }
       } catch (error) {
-        console.log('Cookie session check failed:', error);
+        console.error('Cookie session check failed:', error);
+        console.error('Error details:', error.message);
+        console.error('Error stack:', error.stack);
       }
 
       console.log('No valid session found');
@@ -257,6 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize
   console.log('Initializing authentication...');
+  console.log('Config:', config);
   handleUrlErrors();
   
   // Small delay to ensure DOM is fully ready
