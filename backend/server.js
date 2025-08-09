@@ -1,14 +1,16 @@
-// server.js - STEP 1: Add CORS and Session
+// server.js - STEP 2: Add Auth Routes
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
 // Basic middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // CORS
 app.use(cors({
@@ -34,6 +36,17 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+// Add auth routes with detailed error handling
+try {
+  console.log('🔄 Loading auth routes...');
+  const authroutes = require('./routes/authroutes');
+  app.use('/api/auth', authroutes);
+  console.log('✅ Auth routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading auth routes:', error.message);
+  console.error('❌ Error stack:', error.stack);
+}
 
 // MongoDB
 mongoose.connect(process.env.MONGO_URI)
