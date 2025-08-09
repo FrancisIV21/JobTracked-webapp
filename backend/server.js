@@ -16,17 +16,14 @@ app.use(cookieParser());
 app.use(cors({
   origin: [
     'http://localhost:5501',
-    'https://jobtracked-euuf6sl0q-francisiv21s-projects.vercel.app'
+    'https://jobtracked-euuf6sl0q-francisiv21s-projects.vercel.app',
+    // Add your actual Vercel URL here - check your Vercel dashboard
+    'https://jobtracked.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
-
-// Test routes
-app.get('/', (req, res) => {
-  res.json({ message: 'Server running with CORS!' });
-});
 
 app.get('/api/health', (req, res) => {
   res.json({ 
