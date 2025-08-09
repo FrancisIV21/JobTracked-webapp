@@ -1,9 +1,11 @@
-// server.js - STEP 2: Add Auth Routes
+// server.js - Add Passport Configuration
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const passport = require('passport');
 
 const app = express();
 
@@ -12,18 +14,36 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 // CORS
 app.use(cors({
   origin: [
     'http://localhost:5501',
-    'https://jobtracked-euuf6sl0q-francisiv21s-projects.vercel.app',
-    // Add your actual Vercel URL here - check your Vercel dashboard
-    'https://jobtracked.vercel.app'
+    'https://jobtracked-euuf6sl0q-francisiv21s-projects.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
+
+// Test routes
+app.get('/', (req, res) => {
+  res.json({ message: 'Server running with CORS!' });
+});
 
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -34,26 +54,35 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Add auth routes with detailed error handling
+// Load Passport configuration (THIS WAS MISSING!)
+console.log('🔄 Loading Passport configuration...');
 try {
-  console.log('🔄 Loading auth routes...');
-  const authroutes = require('./routes/authroutes');
-  app.use('/api/auth', authroutes);
+  require('./config/passport')(passport);
+  console.log('✅ Passport configuration loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading Passport configuration:', error.message);
+}
+
+// Load auth routes
+console.log('🔄 Loading auth routes...');
+try {
+  const authRoutes = require('./routes/authroutes');
+  app.use('/api/auth', authRoutes);
   console.log('✅ Auth routes loaded successfully');
 } catch (error) {
   console.error('❌ Error loading auth routes:', error.message);
-  console.error('❌ Error stack:', error.stack);
+  console.error('Full error:', error);
 }
 
-// Add job routes with detailed error handling
+// Load job routes
+console.log('🔄 Loading job routes...');
 try {
-  console.log('🔄 Loading job routes...');
-  const jobroutes = require('./routes/jobroutes');
-  app.use('/api/jobs', jobroutes);
+  const jobRoutes = require('./routes/jobroutes');
+  app.use('/api/jobs', jobRoutes);
   console.log('✅ Job routes loaded successfully');
 } catch (error) {
   console.error('❌ Error loading job routes:', error.message);
-  console.error('❌ Error stack:', error.stack);
+  console.error('Full error:', error);
 }
 
 // MongoDB
