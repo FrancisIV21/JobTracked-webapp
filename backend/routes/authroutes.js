@@ -76,13 +76,13 @@ router.get('/google/callback', (req, res, next) => {
     if (err) {
       console.error('Google OAuth authentication error:', err);
       console.error('Error stack:', err.stack);
-      return res.redirect(`${process.env.FRONTEND_URL}/frontend/pages/JobTrackerSignUp.html?error=auth_failed&details=${encodeURIComponent(err.message)}`);
+      return res.redirect(`${process.env.FRONTEND_URL}/JobTrackerSignUp.html?error=auth_failed&details=${encodeURIComponent(err.message)}`);
     }
 
     if (!user) {
       console.error('No user returned from Google OAuth');
       console.error('Passport info:', info);
-      return res.redirect(`${process.env.FRONTEND_URL}/frontend/pages/JobTrackerSignUp.html?error=no_user`);
+      return res.redirect(`${process.env.FRONTEND_URL}/JobTrackerSignUp.html?error=no_user`);
     }
 
     try {
@@ -151,14 +151,14 @@ router.get('/google/callback', (req, res, next) => {
         if (loginErr) {
           console.error('Session login error:', loginErr);
           console.error('Login error stack:', loginErr.stack);
-          return res.redirect(`${process.env.FRONTEND_URL}/frontend/pages/JobTrackerSignUp.html?error=session_error&details=${encodeURIComponent(loginErr.message)}`);
+          return res.redirect(`${process.env.FRONTEND_URL}/JobTrackerSignUp.html?error=session_error&details=${encodeURIComponent(loginErr.message)}`);
         }
 
         console.log('Session established successfully');
         console.log('Session after login:', req.session);
 
         // Get return URL
-        const returnTo = req.session.returnTo || '/frontend/pages/JobTrackerDashboard.html';
+        const returnTo = req.session.returnTo || '/JobTrackerDashboard.html';
         console.log('Return URL:', returnTo);
         
         if (req.session.returnTo) {
@@ -184,7 +184,7 @@ router.get('/google/callback', (req, res, next) => {
                        error.message.includes('database') ? 'db_error' :
                        error.message.includes('save') ? 'save_error' : 'server_error';
       
-      res.redirect(`${process.env.FRONTEND_URL}/frontend/pages/JobTrackerSignUp.html?error=${errorType}&details=${encodeURIComponent(error.message)}`);
+      res.redirect(`${process.env.FRONTEND_URL}/JobTrackerSignUp.html?error=${errorType}&details=${encodeURIComponent(error.message)}`);
     }
   })(req, res, next);
 });
@@ -247,7 +247,7 @@ router.post('/login', async (req, res) => {
     res.json({
       success: true,
       token,
-      redirect: `${process.env.FRONTEND_URL}/frontend/pages/JobTrackerDashboard.html`,
+      redirect: `${process.env.FRONTEND_URL}/JobTrackerDashboard.html`,
       user: user.toAuthJSON()
     });
     console.log('=== EMAIL LOGIN SUCCESS ===');

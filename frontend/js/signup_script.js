@@ -4,8 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
   backendUrl: window.location.hostname === 'localhost'
     ? 'http://localhost:5000'
     : 'https://jobtracked.onrender.com',
-  dashboardPath: '/frontend/pages/JobTrackerDashboard.html',
-  signupPath: '/frontend/pages/JobTrackerSignUp.html',
+  dashboardPath: '/JobTrackerDashboard.html',
+  signupPath: '/JobTrackerSignUp.html',
   tokenKey: 'authToken',
   userDataKey: 'userData'
 };

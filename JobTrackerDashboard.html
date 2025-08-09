@@ -6,8 +6,8 @@
   <title>Job Tracked | Track your job applications</title>
   
   <!-- Styles -->
-  <link href="../css/main.css" rel="stylesheet" />
-  <link rel="icon" href="../assets/images/favicon.png" type="image/x-icon" />
+  <link href="frontend/css/main.css" rel="stylesheet" />
+  <link rel="icon" href="frontend/assets/images/favicon.png" type="image/x-icon" />
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Rocket Widget -->
@@ -17,7 +17,7 @@
 <body class="bg-[#f4f6fa] h-screen overflow-hidden flex flex-col">
   <!-- Profile Icon Button -->
 <button id="profileBtn" type="button" class="absolute top-4 left-4 z-50">
-  <img id="profileImage" src="../assets/images/profileicon.svg" alt="Profile" class="w-8 h-8 rounded-full border-2 border-white shadow" />
+  <img id="profileImage" src="frontend/assets/images/profileicon.svg" alt="Profile" class="w-8 h-8 rounded-full border-2 border-white shadow" />
 </button>
 
   <div class="flex-1 flex flex-col overflow-hidden w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,7 +27,7 @@
 
       <!-- Logo + Title -->
       <div class="flex items-center justify-center gap-2 mt-6 shrink-0">
-        <img src="../assets/images/logo.png" alt="Logo" class="w-8 h-8 md:w-10 md:h-10 object-contain" />
+        <img src="frontend/assets/images/logo.png" alt="Logo" class="w-8 h-8 md:w-10 md:h-10 object-contain" />
         <h1 class="text-2xl md:text-3xl lg:text-[32px] font-normal leading-tight text-[#3b53f4]" style="font-family: 'Holtwood One SC', serif;">
           JOB TRACKED
         </h1>
@@ -108,8 +108,8 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../script.js"></script>
-  <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+  <script src="frontend/script.js"></script>
+  <script id="dhws-dataInjector" src="/public/dhws-data-injector.js"></script>
 <!-- Overlay -->
 <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40"></div>
 
@@ -129,7 +129,7 @@
   </div>
 </div>
   <!-- Scripts -->
-  <script src="../js/dashboard_script.js"></script>
+  <script src="frontend/js/dashboard_script.js"></script>
   <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
 </body>
 </html>

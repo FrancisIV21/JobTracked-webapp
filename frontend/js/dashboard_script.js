@@ -191,13 +191,13 @@
         localStorage.removeItem(USER_DATA_KEY);
         
         // Redirect to login page
-        window.location.href = '/frontend/pages/JobTrackerSignUp.html';
+        window.location.href = '/JobTrackerSignUp.html';
       } catch (error) {
         console.error('Logout error:', error);
         // Still clear storage and redirect on error
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_DATA_KEY);
-        window.location.href = '/frontend/pages/JobTrackerSignUp.html';
+        window.location.href = '/JobTrackerSignUp.html';
       } finally {
         hideSpinner();
       }
@@ -207,7 +207,7 @@
     function redirectToLogin() {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_DATA_KEY);
-      window.location.href = '/frontend/pages/JobTrackerSignUp.html';
+      window.location.href = '/JobTrackerSignUp.html';
     }
 
     // Job management
